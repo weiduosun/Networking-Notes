@@ -1,0 +1,249 @@
+6.1 Intro
+What is network security?
+(1) confidentiality: 
+only sender and receiver can understand message
+sender encrypt message
+receiver decrpt message
+(2) authentication
+confirm identity of each other
+(3) message integrity
+send, receive good data
+(4) access and availability
+Target users can access to web service
+ 
+6.2 Threaten
+What bad guys will do?
+(1) eavesdrop
+(2) insert
+(3) impersonation
+(4) hijacking
+(5) denial of service
+E.g. by overloading bandwidth/ resources
+Solution: SYN cookie
+Seq = y = Hash(source IP, dest IP, source port, dest port, random number)
+ 
+Mapping (eavesdrop)
+Case the joint
+Ping
+Port-scanning: try to build TCP connection with each port
+Solution: record flow
+ 
+Segment sniffing (eavesdrop)
+solution:  Running the same software
+ 
+IP Spoofing (impersonation)
+solution: Ingress filtering
+ 
+6.3 cryptograph
+6.3.1 Intro
+Model 1:
+ 
+Trudy may know encryption algorithm and decryption algorithm.
+But she must not know the encryption key and the decryption key.
+ 
+Model 2:
+ 
+Trudy may know encryption algorithm, decryption algorithm, and public key.
+But she must not know the private key.
+ 
+Decode ways:
+(1) cipher-text only attack
+(1 brute force
+(2 statistical analysis
+The frequency of each alphabet
+ 
+(2) known-plaintext attack
+Monoalphabetic cipher
+ 
+(3) chosen-plaintext attack
+ 
+6.3.2 traditional encryption
+(1) substitution cipher: 用一种东西替代另一种东西
+I love you -> n etox dhz
+(2) transpositions cipher: permutation method
+I love you -> ilov eyou -> lvio yueo
+ 
+6.3.3 modern encryption
+Not target on alphabet, but on bit multiplication
+ 
+(1) Balanced key encryption 
+(1 stream ciphers
+z = z0z1z2...
+M -> ((key -> z) + XOR) -> encrypted M
+Encrypted M -> ((key -> x) + XOR) -> M
+ 
+(2 block ciphers
+将明文序列划分为长为n的明文组，分块加密
+E.g. DES algorithm structure
+ 
+ 
+(2) Unbalanced key encryption
+Public key encryption
+Public key: everyone knows
+Private key: only receiver knows
+ 
+Requirement:
+K-b(K+b(m)) = m
+Given K+b, cannot get K-b
+ 
+RSA
+(1) N = p * q (p and q are big primes)
+      pick such e and d that e * d = 2 mod (p - 1)(q - 1)
+Pk = (N, e)
+Sk = (N, d)
+      m should be invertible
+(2) encryption: m ^ e mod N = c
+(3) decryption: c ^ d mod N = m
+ 
+c ^ d mod n = (m ^ e mod n) mod n = m ^ ed mod n = m ^ (ed mod z) mod n = m mod n
+ 
+6.4 Authentication
+Target: Alice shows her identification to Bob 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Drawback: Both bob and Alice know the Ka-b.
+ 
+ 
+Drawback:
+ 
+ 
+6.5 message integrity
+(1) What is message integrity?
+(1 Prove message comes from the specific sender
+(2 Check if the message is changed through transition
+(3 Prevent the time and order of messages are changed
+(4 Prevent the deny of sender or receiver
+ 
+(2) Cryptographic Hash Function
+ 
+ 
+(3) Common Hash Algorithm:
+(1 Checksum
+ 
+(2 MD5
+(3 SHA
+ 
+(4) Message digest
+M -> H -> H(m) (message digest)
+H(m) is the fingerprint of m.
+ 
+M + H(m) -> (m, h)
+M -> H -> H(m)
+H(m) =? H
+Drawback: cannot decide who is the sender
+ 
+MAC(Message Authentication Code)
+M + key + H -> (m, H(m + s))
+Drawback: cannot decide if the sender changed the message
+ 
+6.6 Key Distribution Center and Certification Authority
+KDC (Key Distribution Center)
+Alice和Bob只知道自己与kdc之间的对称密钥，分别与kdc秘密通信
+ 
+ 
+Bob收到声称来自Alice的公钥，如何证明这个公钥确实来自Alice?
+CA (Certification Authority)
+ 
+ 
+7.1 E-mail
+ 
+ 
+ 
+7.2 SSL
+Support all the application based on TCP
+Https: use SSL
+ 
+Confidentiality
+Integrity
+Authentication
+ 
+ 
+ 
+4 keys:
+Kc = Client sends data to server
+Mc = client sends MAC(完整性认证)  to server
+Ks = server sends data to client
+Ms = server sends MAC to client
+ 
+ 
+Attacker catch, repeat or disorder records?
+Add sequence into MAC.
+ 
+Attacker repeat all the records?
+Use nonce.
+ 
+Attacker close TCP connection?
+Add type into MAC.
+ 
+Cipher suite:
+Public key algo
+Symmetric encryption algo
+MAC
+ 
+Protocol stack:
+Change Cipher Spec Protocol
+Alert Protocol
+Handshake Protocol
+Record Protocol
+ 
+ 
+先建立tcp connection, 再建立ssl
+先断开ssl, 再断开tcp connection
+ 
+7.3 IP secuirity
+(1) PN (Private networks)
+总部网络 -> router -> 专用通道 -> router -> 分支机构网络
+ 
+(2) VPN (Virtual Private Network)
+总部网络 -> router -> 安全通道 -> router -> 分支机构网络
+安全通道搭建在公共网络之上
+实现技术：IPSec, SSL, L2TP
+ 
+(3) IPSec
+(1 service
+Confidentiality
+Data integrity
+Origin authentication
+Replay attack prevention
+ 
+(2 transport model
+1 Hosts are IPSec-ware: Hosts are responsible for transferring datagram.
+2 Routers are IPSec-ware: Routers are responsible for transferring datagram.
+ 
+(3 SA (security association)
+IPSec是单工，面向连接的
+在端到端(router and router)建立两条SA
+密钥交换 IKE
+ 
+AH/RSP 封装IPSec datagram
+ 
+7.4 WLAN security
+(1) WEP (Wired Equivalent Privacy)
+每个分组单独加密
+ 
+(2) 802.11i
+ 
+7.5 Firewall
+ 
+Types
+(1) Stateless packet filters
+ 
+ACL (Access Control List)
+ 
+(2) Stateful packet filters
+跟踪每个tcp connection
+ 
+(3) Application gateways
+基于应用数据以及IP/TCP.UDP头部字段过滤分组
+ 
+设置合理的安全级别
+
