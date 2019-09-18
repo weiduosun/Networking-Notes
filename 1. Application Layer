@@ -1,0 +1,231 @@
+2.2 Two structures:
+ 
+(1) client/server
+Server: 7 * 24 hours provide server
+             permanent address/ domain name
+             multiple servers
+Client: can communicate with the server, not with other clients
+              use dynamic IP address
+              discontinuous linked to the server 
+E.g. Web
+ 
+(2) peer to peer
+No 7 * 24 hours server
+Each node can communicate with each other
+use dynamic IP address
+ 
+(3) hybrid
+Napster P2P -> File Transfer
+               C/S ->  File Search
+ 
+2.3.1 HTTP (Application layer Protocol)
+(1) Intro
+HTTP (HyperText Transfer Protocol)
+C/S structure
+Client: Browser
+Server: Web Server (E.g. Apache)
+TCP
+Stateless 服务器不维护任何有关客户端过去所发请求的信息
+优点：
+1.	避免状态不一致
+2.	不用存储状态
+ 
+(2) Permanent/ Non-permanent Connection
+Non-Permanent connection:
+Each TCP connection can only transfer one object
+(1 Type URL: www.someSchool.edu/someDepartment/home.index
+(2 HTTP client sends TCP connection request to www.someSchool.edu
+(3 HTTP server is waiting at port 80, receives the request, tells the client
+(4 HTTP client sends HTTP request by Socket
+(5 HTTP server receives the request, generates the response, closed the connection
+(6 HTTP client receives the response, decode the file (html, jpg…), display the file
+Repeat 1 - 6 if there are multiple objects
+ 
+Total time = 2*RTT(Round Trip Time) + File Transfer Time
+ 
+Disadvantages:
+(1 Each object needs 2 RTTs
+(2 Overhead for OS
+ 
+Permanent Connection:
+Keep TCP connection open
+Pipelining/ Non-pipelining (http 1.1)
+ 
+2.3.2 Message
+(1 Request
+GET /somedir/page.html HTTP/1.1
+Host: www.someschool.edu (useful while using cache or proxy servers)
+User-agent: Mozilla/ 4.0
+Connection: close
+Accept-language: fr
+ 
+How to upload input from browser to server?
+(1 POST method (form)
+The input message is in the entity body
+(2 GET method (url)
+The input message is in the URL
+E.g. www.someschool.edu/delete?1
+ 
+(2 Response
+HTTP/1.1 200 OK
+Connection: close
+Date: Thu, 06 Aug 1998 12:00:15 GMT （Web server 生成消息的时间）
+Server: Apache/1.3.0 (Unix)
+Last-Modified: Mon, 22 Jun 1998 （网页上次修改时间）
+Content-Length: 6821
+Content-Type: text/html
+ 
+HTTP response status code:
+200 OK
+301 Moved Permanently
+304 Not Modified
+400 Bad Request
+404 Not Found
+505 HTTP Version Not Supported
+ 
+2.3.3 Cookie (extension tech)
+Need status (e.g. online shopping)
+为辨别用户身份、进行session跟踪而存储在用户本地终端上的数据
+ 
+(1 Composition
+HTTP response message cookie header line
+HTTP request
+Cookie file on the server client, managed by the web server
+Web server backend database
+ 
+(2 Process
+ 
+ 
+ 
+(3 Functions
+Id verification
+Shopping cart
+Recommendation
+Web e-mail
+ 
+(4 Disadvantages
+Private
+ 
+2.3.4 Proxy Server
+(1) What is Proxy Server?
+ 
+ 
+ 
+(2) How proxy server works?
+If the access link is 1.5 Mbps, the LAN is 10 Mbps.
+There are 15 requests sending to the original server per second
+LAN utility rate = 15%
+Link layer utility rate = 100%
+The prorogation delay will be extremely high.
+ 
+Solution 1: Increase the access link (Expensive)
+ 
+Solution 2: Add a proxy server
+Assume 40% requests can be satisfied immediately. (No need to send to the original server. Just get from the proxy server)
+LAN utility rate = 40%
+Link layer utility rate = 60%
+The prorogation delay will be low.
+ 
+(3) How to ensure the context of the proxy server is align with that of the original server?
+Conditional GET
+If the cache has the up-to-date version (Compare with If-Modified-Since(Date))
+the original server sends HTTP/1.0 304 Not Modified.
+Otherwise, If-Modified-Since: <data>
+ 
+2.4 E-mail
+(1) Components
+(1 Mail Server
+Store the e-mails sent to the user
+Store the e-mails to be sending to other users (message queue)
+ 
+Advantages:
+Receive e-mails when the PC is not connected to the Internet.
+Ensure the e-mails send to the targets correctly. (Help us resend e-mails if fails)
+ 
+(2 SMTP Protocol
+Permanent connection
+ 
+Comparation with HTTP:
+Same: ASCII,  Command/Response
+Difference: HTTP pull
+SMTP push
+ 
+2.5 DNS
+Domain name -> IP Address
+ 
+(1) Distributed Hierarchical database
+                              Root DNS Servers
+ 
+Com DNS servers  org DNS Servers  edu DNS servers 
+             |                                |                             |
+……
+ 
+E.g. Search IP of www.amazon.com
+(1 Search Root DNS Server, find the com DNS server
+(2 Search com DNS Server, find the amazon.com DNS server
+(3 Search amazon.com DNS server, get the IP of www.amazon.com
+ 
+Disadvantage: Root DNS Server's workload is too heavy.
+ 
+Solution: Add local DNS server
+Disadvantage: Root DNS Server's workload is also too heavy.
+ 
+(1 Recursion
+Requesting host -> local DNS server -> root DNS server -> TLD DNS server
+-> authoritative DNS server -> TLD DNS server -> root DNS server -> local DNS server
+-> requesting host
+ 
+Disadvantage: Root DNS Server's workload is also too heavy.
+ 
+(2 Iterative
+Requesting host -> local DNS server -> root DNS server -> local DNS server
+-> TLD DNS server -> local DNS server -> authoritative DNS server -> local DNS server
+-> requesting host
+ 
+(2) DNS cache and renew
+Delete after a period
+Store the mapping of top-domain server (Root DNS server is not visited often)
+ 
+2.6 P2P
+ 
+(1) File Distribution:
+ 
+ 
+ 
+ 
+P2P is faster than C/S in file distribution.
+ 
+BitTorrent: Tit-for-tat
+Higher speed, better trade friend.
+ 
+(2) index technology
+The mapping between information and IP address + port number
+ 
+(1 Application
+1 File sharing
+2 QQ, Skype(Hierarchical overlap network)
+ 
+(2 Type
+1 Centralized index
+Centralized directory server
+节点加入时通知cds，cds保存节点的ip和内容
+其他节点向cds请求所查找内容的节点位置
+其他节点向存有内容的节点请求内容
+ 
+Disadvantages：
+1.单点失效（cds挂了）
+2.性能瓶颈（cds负荷大）
+3.版权
+ 
+2 Query flooding
+Each node only index its own sharing files.
+Overlay network: Graph
+The query is sent by TCP connection.
+Each node transfers the query.
+If the file is hit, return the file by the reversed path.
+Query flooding will cost a lot of bandwidths, leading to network congestion.
+ 
+3 Hierarchical overlap network
+ 
+Group-leader peer <=> cds + transfer queries
+
