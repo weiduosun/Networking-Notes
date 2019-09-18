@@ -1,0 +1,45 @@
+2.7 Socket Program
+For host, not router
+API(Application Programming Interface): Application layer <=> Transportation layer (below operating system)
+ 
+2.7.2 Socket API
+Host <=> IP address
+Application Program （应用程序）on the host <=> Port Number
+ 
+ 
+ 
+Socket Abstract -> Data Structure
+Struct sockaddr_in {
+U_char sin_len; //length of the address
+U_char sin_family;
+U_short sin_port; // port number
+Struct in_addr sin_addr; // IP address
+Char sin_zero[8[
+}
+ 
+ 
+ 
+SOCK_ROW can face to network layer.
+ 
+Bind(): server binds IP address and port number
+ 
+Listen(): server only
+Connect(): client only (TCP: build TCP connection 若成功返回，连接一定成功/ UDP: target the server address 若成功返回，连接不一定成功)
+UDP不会真正建立连接，不是点对点通信
+ 
+Accept(): server and TCP only
+ 
+Support Multithreading and Concurrent.
+ 
+Send(): send messages
+Recv(): receive messages
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+主线程只负责接收客户的连接请求，不负责与客户的数据交互
+
