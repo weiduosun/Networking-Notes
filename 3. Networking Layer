@@ -1,0 +1,331 @@
+4.1 Functions
+(1) forwarding: router -> router
+      forwarding table (address, output link)
+(2) routing: determine the path from source to destination
+      (routing algorithm)
+(3) connection build: ATM
+      source, destination host and routers build the logic connection
+      (determine path, all routers on the path are related)
+      Transportation connection: transparent for intermediate equipment (port to port)
+ 
+4.2 Network Layer Service Model
+Provide what service model for transfer message channel of hosts?
+Internet: best effort (通过tcp处理网络拥塞)
+(1) connection-less service: datagram network
+      Not determine path
+      Paths of different segments may be various 
+(2) connection service: virtual-circuit network
+      Build connection, determine path
+      Segments share one path
+      Close the connection after transfer 
+ 
+Virtual circuits (ATM (telephone))
+Call setup -> data transfer -> close call
+Each segment brings VCIP, not the dest host IP
+ 
+VC implementation:
+(1) a path from source host to dest host
+(2) VCIDs (each path should have multiple VCIDs, more bandwidths, more VCIDs)
+     同一条vc, 各段的vcip通常不同
+(3) forwarding table records VICD
+     input interface, input VC, output interface, output VC
+ 
+Signaling protocol (choose path)
+Build, maintain, and close the VC
+ 
+Datagram network (Internet)
+(1) No connection in network layer
+(2) Each segment brings dest address
+(3) Router transfer segments according to the dest address of segments
+      Each segment chooses the path independently
+(4) forwarding table
+      dest address range, output link interface
+ 
+ 
+ 最长前缀匹配优先：优先选择与分组目的地址匹配前缀最长的入口（entry）
+Exercise:
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4.3 IPv4
+ 
+ 
+4.3.1 IPv4 Header
+ >= 20 bytes (If no option, 20 bytes)
+首部长度以4个字节为单位，占4位
+总长度以1个字节为单位，占16位
+TTL （生存时间）占8位，每经过一个router减1，减到0被丢弃
+checksum
+Source IP, dest IP (of hosts or routers)
+ 
+4.3.2 IP fragmentation
+router分，dest host装
+和分组有关的header变量：标识，标志位，片偏移
+标识（ID）：每次加1，占16位
+标志位：空 + df(don’t fragment) + mf(more fragment), 占3位
+Df = 1: cannot fragment
+Df = 0: can fragment
+Mf = 1: not the last fragment
+Mf = 0: the last fragment or no fragment
+片偏移字段：一个ip分组分片封装原ip分组数据的相对偏移量
+8个字节为单位，占13位
+（总长度16位， 13 bites * 2^3 = 16 bites)
+ 
+Exercise:
+4000B datagram
+MTU = 1500B
+DF = 0
+ 
+D = (MTU - 20) / 8 * 8 = 1480
+N = (4000 - 20) / 1480 = 2.6892 = 3
+Segment1: length = 1500 MF = 1 offset = 0
+Segment2: length = 1500 MF = 1 offset = 1480 / 8 = 185
+Segment3: length = 4000 - 1480 - 1480 = 1040 MF = 0 offset = 185 + 185 = 370
+（最后一片不加20，因为原数据报也有头部）
+ 
+4.3.3 IP addressing
+IP address is related to (marks) each interface
+ 
+ 
+How to allocate IP address for each interface?
+NetID + HostID
+ 
+具有相同网络号的接口构成ip子网（subnet）
+同一个子网下的设备不跨越路由器彼此联通
+ 
+ 
+
+
+
+
+
+
+特殊ip地址：
+ 
+ 
+私有地址：
+ 
+任何私有网络都可以使用，不同私有网络之间可以有相同的私有地址
+ 
+子网划分：
+ 
+如何确定是否划分了子网？用多少位划分子网？
+ 
+子网掩码：
+形如ip address 32位 点分十进制
+netID 和 subID位全1， hostID全0
+ 
+默认子网掩码：
+A网：255.0.0.0
+b网：255.255.0.0
+c网：255.255.255.0
+ 
+Exercise:
+借用前三个比特划分子网的b网子网掩码是？
+b网的netID占16位，全1 -> 11111111 11111111 -> 255.255
+subID占3位，则hostID占剩余13位 -> 11100000 00000000 -> 224.0
+ 
+提取子网地址：
+将ip分组的目的ip地址与子网掩码按位与运算
+ 
+ 
+4.4 CIDR (Classless InterDomain Routing)
+消除传统的a,b,c类地址界限
+netID + subID -> Network Prefix
+a.b.c.d/x  x is the length of network prefix
+ 
+Advantages:
+Improve the efficiency of IP allocation
+Improve the efficiency of routers (Combine subnets)
+ 
+ 
+ 
+ 
+4.5 DHCP
+ 
+How to get an IP address?
+(1) static configuration
+(2) DHCP 
+（1 从服务器动态获取 IP address, 子网掩码，默认网关地址，DNS服务器名称与IP地址
+（2 即插即用
+（3 允许地址重用
+（4 支持在用地址续租
+（5 支持移动用户加入网络
+ 
+Workflow
+(1) A client broadcasts (DHCP discover)
+(2) One DHCP server receives the message and sends its IP address and the allocated IP address to the client (DHCP offer)
+(3) The client sends the request to the DHCP server
+(4) The DHCP server receives the message and sends the ACK, mask …… to the client
+ 
+255.255.255.255 -> broadcast
+ 
+DHCP is implemented in the Application layer.
+ 
+4.6 NAT
+(1) Why needs NAT?
+(1 Only need/can apply to one IP address from ISP 
+     IPv4 address have been totally allocated
+(2 No need to broadcast to outer network when the IP address of a local equipment is changed
+(3 No need to change the IP address of local equipment when ISP is changed
+(4 Outer networks cannot track local equipment (security)  
+(5 Can support 65535 (the number of different port numbers) concurrent connections
+ 
+(2) Workflow
+ 
+NAT 转换表： WAN IP address, port number <=> LAN IP address, port number
+ 
+4.7 ICMP (Internet Control Message)
+（1） functions
+（1 差错报告
+ 目的不可达
+ 源抑制
+ 超时/超期
+ 参数问题
+ 重定向
+（2 网络探寻
+ 回声请求与应答报文
+ 时间戳请求与应答报文
+ 
+（2） format
+ 
+ checksum includes the data
+ 
+(3) Traceroute
+Source host sends a serious UDP datagram to dest host
+The dest port is impossible to use on the dest host
+IP datagram TTL = 1
+IP datagram TTL = 2
+……
+When TTL = n arrives the n st router:
+The router drops the datagram, send the ICMP to source host, which carries the name of the router and IP address.
+(trace route)
+……
+Finally, the UDP datagram arrives the dest host.
+The dest host sends ICMP to the source host (cannot reach the dest port)
+ 
+Application: identify if a specific IP is blocked -> timeout
+ 
+4.8 IPv6
+(1) Why need IPv6?
+IPv4 address have been totally allocated
+ 
+(2) The difference with IPv4
+The length of IPv6 header is 40 bytes
+The length of IPv6 address is 128 bites (16 bytes)
+No checksum
+New ICMP: Packet too big (Only source host fragments)
+ 
+(3) Presentation
+8组用冒号分割的16进制数
+E.g. 1080:0:ff:0:8:800:200c:417a
+ 
+(4) Types
+(1 unicast
+(2 multicast
+(3 anycast 一对一组之一（最近的）
+ 
+(5) Tunneling (IPv4 与 IPv6 共存)
+ 
+把IPv6封装到IPv4中， 通过IPv4网络
+ 
+Exercise 1:
+Whose header does not contain checksum?
+A.	UDP
+B.	ICMP
+C.	IPv4
+D.	IPv6
+E.	TCP
+ Answer: D
+ 
+Exercise 2:
+ 
+ 
+ 
+ 
+ 
+ 
+4.9 Router Algorithm
+Given:
+Graph: network （有向带权图）
+Node: router
+Edge: link
+Weight: cost (链路的费用，带宽的倒数，拥塞程度……)
+ 
+Return:
+The path that has the smallest cost from the source host
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+(1) Dijkstra
+ 
+ Runtime: O(n) -> O(nlogn)
+ 
+Disadvantage: oscillations when cost changes
+ 
+(2) Bellman-Ford
+ 
+ 
+ 
+ 
+Good news travel fast
+ 
+ 
+Count to infinity
+ 
+How to solve: 
+Poisoned  reverse
+ 
+ 
+定义最大度量 
+ 
+ 
+4.9.5 层次路由
+Autonomous systems
+同一个as内的路由算法相同
+不同as内的路由算法可以不同
+ 
+Gateway router
+连接不同as的router
+ 
+4.10 Internet 路由
+Interget 采用层次路由
+as内路由协议：IGP (Interior gateway protocols)
+ 
+一个协议实现何种功能，就分到哪个层次，和实现的方式无关
+ 
+as间路由协议：BGP (Border Gateway Protocol)
+ 
+The differences between as内 and as间 protocols:
+(1) policy
+(2) scale
+(3) performance
+
