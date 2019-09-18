@@ -1,0 +1,184 @@
+3.1 Intro
+ 
+Transportation Layer Protocol provides the processes in different hosts with a logical communication.
+Network Layer Protocol provides the hosts with a logical communication.
+ 
+Logical end-end transportation between 2 transportation layers in 2 hosts.
+ 
+Sender: sperate messages to multiple segments and send them to the network layer.
+Receiver: combine multiple segments into a message and send it to the application layer.
+ 
+3.2 复用和分用
+3.2.1 concept
+接收端进行多路分用：传输层依据头部信息将收到的segment交给正确的socket（process）
+发送端进行多路复用：从多个socket接收数据，为每块数据封装上头部信息，生成segment，交给网络层
+ 
+3.2.2 TCP/UDP中的分用
+(1) Udp socket：
+Source port number + destination port number
+Source Port provides return address
+(2) TCP socket:
+Source IP + source port + destination IP + destination port
+ 
+3.3 UDP
+User Datagram Protocol
+(1) feature
+(1 Based on Internet IP protocol => 实现简单 => overhead小 (8 bytes)
+ 复用/分用
+ checksum
+(2 Best effort => 无拥塞控制 => 掌控发送时间
+ loss
+ disorder
+(3 no connection => 延迟小
+常用于流媒体（容忍丢失，速率敏感） ，dns , snmp
+ 
+(2) checksum
+Sender: 16bit -> computation -> put checksum into header
+Receiver: compute header of sender -> compare -> if not equal, mistake; 
+if equal, maybe no mistake
+ 
+3.4 Reliable data transmission principle
+What is reliable? No mistake, no loss, in order.
+(1)  RDT
+(1 RDT 1.0: no bit error, no loss
+(2 RDT 2.0: bit error, no loss
+ 
+Disadvantage:
+Cannot handle ACK/NAK corrupt
+ 
+(3 RDT 2.1
+If ACK/NAK corrupts, sender resends the packet.
+Add sequence number (0, 1) to each packet.
+Receiver drops duplicate packets.
+Sender:
+ 
+ 
+Receiver:
+ 
+ 
+当接收方收到重复分组时（序列号与期望不一致），要给发送方发送ack，激励发送方进入下一个状态（发送下一个分组）
+(4 RDT 2.2
+ 
+ 
+ 
+接收方向发送方发送最后一个成功收到的序列号
+ 
+(5 RDT 3.0
+Bit error + loss packet
+Use timer. If timeout, resend.
+ 
+性能很差：在1gps链路上的速度约为33kb/sec
+网络协议限制了物理资源的利用（软硬件不协同）
+U sender = (L / R) / (RTT + L / R) -> RTT（停等操作）导致U sender低
+ 
+(6 GBN
+Sliding window protocol
+U sender = size of window * (L / R) / (RTT + L / R)
+Cost: 更大的序列号范围，sender更大的缓存空间
+ 
+Sender:
+ 
+ 
+Receiver:
+ 
+ 
+Exercise 1:
+Assume the expected sequence number of the receiver is 5. 
+If the recent received sequence number is 7, the sending ACK should be?
+Answer: 4
+ 
+Exercise 2:
+Assume the sender has sent packets with sequence number from 0 to 7.
+If the sender only received the ACK 0, 2, and 3, what are the packets needed resending?
+Answer: packets with sequence number 4, 5, 6 and 7.
+ 
+Disadvantage:
+Too much resends.
+ 
+(7) Selective Repeat
+Sliding window protocol
+Cost: 更大的序列号范围，sender和receiver更大的缓存空间
+ 
+The dilemma of SR
+Size of window: 3
+Sequence numbers: 0, 1, 2, 3
+ 
+(a) The receiver will put the second pkt0 into the buffer (cannot identify this pkt0 is resent by the sender)
+ 
+How to solve this problem?
+Size of widow of sender + Size of window of receiver <= 2 ^ k (k is the bits of the sequence number)
+In this problem, k = 2,  3 + 3 > 4
+(1) Increase k to 3 so that 3 + 3 < 8
+(2) Decrease size of window to 2 so that 2 + 2 <= 4
+ 
+3.6 TCP
+(1) feature
+（1 点对点 （一个sender， 一个receiver）
+（2 可靠按序
+（3 流水线机制 （拥塞控制，流量控制，窗口尺寸）
+（4 sender/receiver 缓存
+（5 全双工 （同一连接传输双向数据）
+（6 面向连接
+ 
+(2) segment structure
+32 bits
+Source port # dest port #
+Sequence number: segment第一个字节的编号
+Ack number: 希望收到的下一个字节的序列号，该序列号之前的所有字节已被正确接收
+……
+ 
+(3) TCP reliable data transmission
+ gbn + sr
+（1 流水线机制
+（2 累积确认
+（3 单一重传定时器 （超时，收到重复ack）
+ 
+如何设置超时时间?
+略大于rtt
+Short : unnecessary resends
+Long: low response of segment loss
+ 
+Sender:
+ 
+ 
+	 
+
+Why ACK = 120? 120之前的数据都正确收到了
+ 
+快速重传机制：
+如果sender收到3个重复的ack，则立刻resend segment with sequence number y
+ 
+ 
+(4) TCP 流量控制
+为什么需要流量控制？
+避免sender发送太多数据或者速度太快，以至于receiver无法处理
+ 
+Sender <=> receiver  recWindow
+Sender assigns recWindow for the receiver
+Receiver tells the sender recWindow to help sender control the flow
+If recWindow == 0, sender can also send a small packet to assign a new recWindow for the receiver.
+ 
+(5) TCP connection management
+Build the connection
+ 
+ 
+(6) TCP congestion control
+Congestion: 太多主机发送了太多数据或者发送速度太快，以至于网络（流量控制：接收方）无法处理
+ 
+Sender 限制发送速率
+CongWin: 动态调整改变发送速率
+ 
+sender感知网络拥塞(loss)的方法：
+Timeout
+3个重复ack
+ 
+调整发送速率的方法：
+加性增—乘性减(amid): 每个rtt将congwin增大一个mss，发生loss后将congwin减半
+慢启动(ss): congwin初始为1，指数增长，直到达到threshold，threshold更新为loss发生时congwin的一半
+3个重复ack: congwin减到一半，然后线性增长
+Timeout: congwin is set to 1, 然后指数增长
+ 
+ 
+Exercise: If timeout happens when congwin is 16. What is the value of congwin after sending 4 TCP segments?
+Answer: 1 + 2 + 4 + 1 + 1 = 9
+
